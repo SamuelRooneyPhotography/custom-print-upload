@@ -1,0 +1,58 @@
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const artwork = document.getElementById("artwork");
+  const uploadInput = document.getElementById("uploadInput");
+  const sizeSelect = document.getElementById("sizeSelect");
+
+  if (!uploadInput || !artwork || !sizeSelect) {
+    console.error("Required elements not found in DOM");
+    return;
+  }
+
+  const sizes = {
+    small: 140,
+    medium: 200,
+    large: 280
+  };
+
+  // Handle file upload + preview
+  uploadInput.addEventListener("change", async () => {
+    const file = uploadInput.files[0];
+    if (!file) return;
+
+    // Show preview instantly
+    artwork.src = URL.createObjectURL(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const text = await res.text(); // 👈 avoids JSON crash
+      console.log("Server response:", text);
+
+      if (!res.ok) throw new Error(text);
+
+      const result = JSON.parse(text);
+
+      if (result.success) {
+        alert("Upload successful!");
+      } else {
+        throw new Error("Upload failed");
+      }
+
+    } catch (err) {
+      alert("Upload failed: " + err.message);
+    }
+  });
+
+  // Handle size changes
+  sizeSelect.addEventListener("change", () => {
+    artwork.style.width = sizes[sizeSelect.value] + "px";
+  });
+});
+</script>
