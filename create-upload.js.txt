@@ -1,0 +1,25 @@
+const uploadInput = document.getElementById("uploadInput");
+
+uploadInput.addEventListener("change", async () => {
+  const file = uploadInput.files[0];
+  if (!file) return;
+
+  // Step 1: Request a fileId from API
+  const res = await fetch("/api/create-upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: file.name }),
+  });
+
+  const data = await res.json();
+  const fileId = data.fileId;
+
+  // Step 2: Upload file directly to Google Drive
+  await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+    method: "PATCH",
+    headers: { "Content-Type": file.type },
+    body: file
+  });
+
+  alert("Upload successful!");
+});
